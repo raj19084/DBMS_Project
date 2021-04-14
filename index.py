@@ -161,7 +161,7 @@ def get_invigilator_data():
 
 @app.route("/user_selection")
 def user_selection():
-    return "yipee!"
+    return render_template("user_selection.html")
 
 @app.route("/centre_registration")
 def centre_registration():
