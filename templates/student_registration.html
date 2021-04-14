@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='registration.css') }}">
+    <title>Index</title>
+</head>
+<body>
+    <h3>Student Registration</h3>
+
+    <div class="container">
+    <form action="http://localhost:5000/get_student_data" method="post">
+        <label for="fname">First Name</label>
+        <input type="text" id="fname" name="firstname">
+
+        <label for="mname">Middle Name</label>
+        <input type="text" id="mname" name="middlename">
+
+        <label for="lname">Last Name</label>
+        <input type="text" id="lname" name="lastname">
+
+        <label for="dob">Date of birth</label> <br>
+        <input type="date" id="dob" name="dob">
+        <br> <br>
+
+        <label for="gender">Gender</label>
+        <input type="text" id="gender" name="gender">
+
+        <label for="phoneno">Phone number</label>
+        <input type="text" id="phoneno" name="phoneno" pattern="[0-9]{10}">
+
+        <label for="email">Email address</label>
+        <input type="text" id="email" name="email" >
+
+        <label for="stnumber">Street number</label>
+        <input type="text" id="stnumber" name="stnumber">
+
+        <label for="stname">Street name</label>
+        <input type="text" id="stname" name="stname">
+
+        <label for="houseno">House number</label>
+        <input type="text" id="houseno" name="houseno">
+
+        <label for="city">City</label>
+        <input type="text" id="city" name="city">
+
+        <label for="zip">ZIP</label>
+        <input type="text" id="zip" name="zip" pattern="[0-9]{6}">
+
+        <label for="region">Region</label>
+        <input list="regions" name="region">
+
+        <datalist id="regions">
+            <option value="North">
+            <option value="South">
+            <option value="East">
+            <option value="West">
+        </datalist>
+        <br><br>
+        <input type="submit" value="Submit">
+        
+    </form>
+    </div>
+</body>
+</html>
