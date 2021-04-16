@@ -27,9 +27,9 @@ insert_centre = "insert into Exam_Centre (Centre_Name, Location_ID, Capacity) va
 def homepage():
     return render_template("homepage.html")
 
-@app.route("/success/<name>/<role>")
-def success(name, role):
-    return render_template("success.html", name = name, role = role)
+@app.route("/success/<name>/<role>/<additional_message>")
+def success(name, role, additional_message):
+    return render_template("success.html", name = name, role = role, additional_message = additional_message)
 
 @app.route("/register_student/<first_name>/<middle_name>/<last_name>/<dob>/<gender>/<phoneno>/<email_address>/<exam>/<street_number>/<street_name>/<house_no>/<city>/<ZIP>")
 def register_student(first_name, middle_name, last_name, dob, gender, phoneno, email_address, exam, street_number, street_name, house_no, city, ZIP):
@@ -57,7 +57,15 @@ def register_student(first_name, middle_name, last_name, dob, gender, phoneno, e
     q = "('%s', %s, %s, '%s', '%s', %s, %s, '%s', %s);" % (first_name, middle_name, last_name, dob, gender, location_id, phoneno, email_address, exam_id)
     cursor.execute(insert_student + q)
     conn.commit()
-    return redirect(url_for("success", name = first_name, role = "Student"))
+    cursor.execute("SELECT LAST_INSERT_ID();")
+    student_id = str(cursor.fetchone()[0])
+    username = first_name + "_Student_" + student_id
+    cursor.execute("select concat(substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1),substring('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', rand()*36+1, 1));")
+    password = str(cursor.fetchone()[0])
+    cursor.execute("insert into Student_Login (ID, Username, Password) values (%s, '%s', '%s')" % (student_id, username, password))
+    conn.commit()
+    additional_message = "Your username is \"%s\" and your password is \"%s\". Don't share your password with anyone." % (username, password)
+    return redirect(url_for("success", name = first_name, role = "Student", additional_message = additional_message))
 
 @app.route("/student_registration")
 def student_registration():
@@ -243,26 +251,82 @@ def list_exam():
 
 @app.route("/admin/exam/queries/<exam>")
 def exam_queries(exam):
+    cursor.execute("set sql_mode = 'STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';")
+    conn.commit()
     queries = [
         "Details of the exam",
         "Number of regions in which exam %s is conducted:" % exam,
-        "Number of students taking exam %s:" %exam
+        "Number of students taking exam %s:" % exam,
+        "Average age of people taking exam %s:" % exam
     ]
     sql_queries = [
         "Select Exam_name, Exam_date, Exam_time, DURATION From Exam where Exam_name = '%s'" % exam, 
         "Select count_region as Number_Of_Regions from (Select Exam_ID,Count(Region_ID) as count_region  from Conducted_In_Region group by Exam_ID) as k where Exam_ID in (Select ID from Exam where Exam_name='%s');" % exam,
-        "select count(*) as Number_Of_Students from Student where Exam_ID in (select ID from Exam where Exam_name = '%s');" % exam
+        "select count(*) as Number_Of_Students from Student where Exam_ID in (select ID from Exam where Exam_name = '%s');" % exam,
+        "Select Avg(Age) from Student where Exam_ID in (Select ID from Exam where Exam_Name='%s');" % exam
     ]
     headings = [
         ["Exam name", "Exam date", "Exam time", "Duration (in hours)"],
         ["Number of regions"],
-        ["Number of students"]
+        ["Number of students"],
+        ["Average age"]   
+
     ]
     query_results = []
     for q in sql_queries:
         cursor.execute(q)
         query_results.append(cursor.fetchall())
     return render_template("table_display.html", list_tables = query_results, headings = headings, title = queries)
+
+
+@app.route("/student/user_selection")
+def student_user_selection():
+    return render_template("student_user_selection.html")
+
+@app.route("/student/login")
+def student_login():
+    return render_template("student_login.html")
+
+@app.route("/student/<username>/dashboard")
+def student_dashboard(username):
+    id = username.split('_')[2]
+    queries = [
+        "Your details:"
+    ]
+    sql_queries = [
+        "Select First_name, Middle_name, Last_name, DOB, Gender From Student where ID = %s" % id
+    ]
+    headings = [
+        ["First name", "Middle name", "Last name", "DOB", "Gender"]
+    ]
+    query_results = []
+    for q in sql_queries:
+        cursor.execute(q)
+        query_results.append(cursor.fetchall())
+    return render_template("table_display.html", list_tables = query_results, headings = headings, title = queries)
+
+
+
+@app.route("/student/get_login_info", methods = ['GET', 'POST'])
+def get_student_login_info():
+    username = ""
+    password = ""
+    if(request.method == 'POST'):
+        username = request.form['username']
+        password = request.form['password']
+    else:
+        username = request.args.get('username')
+        password = request.args.get('password')
+    query = "select * from Student_Login where username = '%s'" % username
+    cursor.execute(query)
+    query_result = cursor.fetchall()
+    message = "Invalid username or password :("
+    if(len(query_result) == 0):
+        return render_template("failure.html", message = message)
+    actual_password = query_result[0][2]
+    if(password != actual_password):
+        return render_template("failure.html", message = message)
+    return redirect(url_for("student_dashboard", username = username))
 
 if __name__ == '__main__':
    app.run(debug = True)
