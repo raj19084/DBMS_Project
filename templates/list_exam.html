@@ -64,6 +64,8 @@ h2 {
   -webkit-box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
   box-shadow: 0 30px 60px 0 rgba(0,0,0,0.3);
   text-align: center;
+  height: 80vh;
+  overflow-y: scroll;
 }
 
 #formFooter {
@@ -285,23 +287,19 @@ input[type=text]:placeholder {
 <div class="wrapper fadeInDown">
     <div id="formContent">
       <!-- Tabs Titles -->
-      <h2 class="active"> Select User </h2>
+      <h2 class="active"> {{ heading }} </h2>
   
 
   
       <!-- Login Form -->
-      <form action="http://localhost:5000/student_registration">
-        <input type="submit" class="fadeIn fourth" value="Student">
-      </form>
-      <form action="http://localhost:5000/invigilator_registration">
-        <input type="submit" class="fadeIn fourth" value="Invigilator">
-      </form>
-      <form action="http://localhost:5000/centre_registration">
-        <input type="submit" class="fadeIn fourth" value="Exam Centre">
-      </form>
-      <form action="http://localhost:5000/admin/user_selection">
-        <input type="submit" class="fadeIn fourth" value="Admin">
-      </form>
+
+        {% for row in data %} 
+            {% for exam in row %}
+                <form action="http://localhost:5000/admin/exam/queries/{{ exam }}">
+                    <input type="submit" class="fadeIn fourth" value="{{ exam }}">
+                </form>
+            {% endfor %}
+        {% endfor %}
   
       <!-- Remind Passowrd -->
       <div id="formFooter">

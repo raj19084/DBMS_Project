@@ -34,6 +34,18 @@
         <label for="email">Email address</label>
         <input type="text" id="email" name="email" >
 
+        <label for="exam">Exam</label>
+        <input list="exam" name="exam">
+
+        <datalist id="exam">
+            {% for row in data %}
+                {% for name in row %}
+                    <option value="{{ name }}"></option>
+                {% endfor %}
+            {% endfor %}
+        </datalist>
+        <br><br>
+
         <label for="stnumber">Street number</label>
         <input type="text" id="stnumber" name="stnumber">
 
