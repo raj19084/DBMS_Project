@@ -20,7 +20,7 @@ body {
   .data_table tr:nth-child(even){background-color: #f2f2f2;}
   .data_table tr:nth-child(odd){background-color: rgb(180, 175, 175);}
   
-  .data_table tr:hover {background-color: rgb(146, 143, 143);}
+  .data_table tr:hover {background-color: rgb(243, 228, 13);}
   
   .data_table th {
     background-color: #4CAF50;

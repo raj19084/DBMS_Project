@@ -285,19 +285,16 @@ input[type=text]:placeholder {
 <div class="wrapper fadeInDown">
     <div id="formContent">
       <!-- Tabs Titles -->
-      <h2 class="active"> What would you like to query about? </h2>
+      <h2 class="active"> Welcome back {{ username }}! </h2>
   
 
   
       <!-- Login Form -->
-      <form action="http://localhost:5000/admin/exam/list">
-        <input type="submit" class="fadeIn fourth" value="Exam">
+      <form action="http://localhost:5000/student/{{ username }}/details">
+        <input type="submit" class="fadeIn fourth" value="View details">
       </form>
-      <form action="http://localhost:5000/admin/region/list">
-        <input type="submit" class="fadeIn fourth" value="Region">
-      </form>
-      <form action="http://localhost:5000/admin/advanced_statistics">
-        <input type="submit" class="fadeIn fourth" value="Advanced statistics">
+      <form action="http://localhost:5000/student/{{ username }}/update_data_form">
+        <input type="submit" class="fadeIn fourth" value="Update details">
       </form>
   
       <!-- Remind Passowrd -->

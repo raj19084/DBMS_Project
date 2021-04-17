@@ -23,6 +23,8 @@ insert_student = "insert into Student (First_name, Middle_name, Last_name, DOB, 
 insert_invigilator = "insert into Invigilator (First_name, Middle_name, Last_name, DOB, Gender, Location_ID, Phone_number, Email_Address) values "
 insert_centre = "insert into Exam_Centre (Centre_Name, Location_ID, Capacity) values "
 
+
+
 @app.route("/")
 def homepage():
     return render_template("homepage.html")
@@ -114,6 +116,10 @@ def get_student_data():
         city = request.args.get('city')
         ZIP = request.args.get('zip')
         region = request.args.get('region')
+        if(len(middle_name) == 0):
+            middle_name = "NULL"
+        if(len(last_name) == 0):
+            last_name = "NULL"
         return redirect(url_for('register_student', first_name = first_name, middle_name = middle_name, last_name = last_name, dob = dob, gender = gender, phoneno = phoneno, email_address = email_address, exam = exam, street_number = street_number, street_name = street_name, house_no = house_no, city = city, ZIP = ZIP))
 
 @app.route("/register_invigilator/<first_name>/<middle_name>/<last_name>/<dob>/<gender>/<phoneno>/<email_address>/<street_number>/<street_name>/<house_no>/<city>/<ZIP>")
@@ -276,7 +282,7 @@ def exam_queries(exam):
     for q in sql_queries:
         cursor.execute(q)
         query_results.append(cursor.fetchall())
-    return render_template("table_display.html", list_tables = query_results, headings = headings, title = queries)
+    return render_template("table_display.html", list_tables = query_results, headings = headings, title = queries, sql_queries = sql_queries)
 
 
 @app.route("/student/user_selection")
@@ -287,8 +293,51 @@ def student_user_selection():
 def student_login():
     return render_template("student_login.html")
 
+
+# @app.route("/student/id/tables")
+# def student_tables():
+
+@app.route("/student/<username>/update_data_form")
+def update_student_data_form(username):
+    return render_template("update_data_form.html", username = username)
+
+@app.route("/student/<username>/<dob>/<gender>/<phoneno>/<email_address>/<exam>")
+def update_student_data(username, dob, gender, phoneno, email_address, exam):
+    exam_id_query = "SELECT ID FROM Exam where Exam_name = '%s';" % exam
+    cursor.execute(exam_id_query)
+    exam_id = str(cursor.fetchone()[0])
+    student_id = username.split('_')[2]
+    update_student = "update Student set DOB = '%s', gender = '%s', Phone_number = %s, email_address = '%s', Exam_ID = %s where ID = %s;" % (dob, gender, phoneno, email_address, exam_id, student_id)
+    cursor.execute(update_student)
+    conn.commit()
+    return render_template("success_update.html")
+
+@app.route("/student/<username>/get_student_update_data", methods = ['GET', 'POST'])
+def get_student_update_data(username):
+    if(request.method == 'POST'):
+        dob = request.form['dob']
+        gender = request.form['gender']
+        email_address = request.form['email']
+        exam = request.form['exam']
+        phoneno = request.form['phoneno']
+        return redirect(url_for('update_student_data', username = username, dob = dob, gender = gender, phoneno = phoneno, email_address = email_address, exam = exam))
+    else:
+        dob = request.args.get('dob')
+        gender = request.args.get('gender')
+        email_address = request.args.get('email')
+        exam = request.args.get('exam')
+        phoneno = request.args.get('phoneno')
+        return redirect(url_for('update_student_data', username = username, dob = dob, gender = gender, phoneno = phoneno, email_address = email_address, exam = exam))
+
+
 @app.route("/student/<username>/dashboard")
 def student_dashboard(username):
+    return render_template("student_dashboard.html", username = username)
+
+
+
+@app.route("/student/<username>/details")
+def student_details(username):
     id = username.split('_')[2]
     queries = [
         "Your details:"
@@ -303,8 +352,7 @@ def student_dashboard(username):
     for q in sql_queries:
         cursor.execute(q)
         query_results.append(cursor.fetchall())
-    return render_template("table_display.html", list_tables = query_results, headings = headings, title = queries)
-
+    return render_template("table_display.html", list_tables = query_results, headings = headings, title = queries, sql_queries = sql_queries)
 
 
 @app.route("/student/get_login_info", methods = ['GET', 'POST'])
@@ -327,6 +375,23 @@ def get_student_login_info():
     if(password != actual_password):
         return render_template("failure.html", message = message)
     return redirect(url_for("student_dashboard", username = username))
+
+@app.route("/admin/advanced_statistics")
+def advanced_statistics():
+    queries = [
+        "Cube model over gender and region"
+    ]
+    sql_queries = [
+        "Select Student.Gender,Region.Region_Name,Count(Student.ID) as Number_Of_Students from Student inner join Location on Student.Location_ID = Location.ID inner join Region  on Region.Region_ID = Location.Region_ID group by Student.Gender,Region.Region_Name with Rollup union Select Student.Gender,Region.Region_Name,Count(Student.ID) as Number_Of_Students from Student inner join Location on Student.Location_ID = Location.ID inner join Region  on Region.Region_ID = Location.Region_ID group by Region.Region_Name,Student.Gender with Rollup;"
+    ]
+    headings = [
+        ["Gender", "Region", "Number of students"]
+    ]
+    query_results = []
+    for q in sql_queries:
+        cursor.execute(q)
+        query_results.append(cursor.fetchall())
+    return render_template("table_display.html", list_tables = query_results, headings = headings, title = queries, sql_queries = sql_queries)
 
 if __name__ == '__main__':
    app.run(debug = True)

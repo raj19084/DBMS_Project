@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='registration.css') }}">
+    <title>Index</title>
+</head>
+<body>
+
+    <div class="container">
+        <h2 class="active">Update details</h2>
+    <form action="http://localhost:5000/student/{{ username }}/get_student_update_data" method="post">
+        <label for="dob">Date of birth</label> <br>
+        <input type="date" id="dob" name="dob">
+        <br> <br>
+
+        <label for="gender">Gender</label>
+        <input type="text" id="gender" name="gender">
+
+        <label for="phoneno">Phone number</label>
+        <input type="text" id="phoneno" name="phoneno" pattern="[0-9]{10}">
+
+        <label for="email">Email address</label>
+        <input type="text" id="email" name="email" >
+
+        <label for="exam">Exam</label>
+        <input list="exam" name="exam">
+
+        <datalist id="exam">
+            {% for row in data %}
+                {% for name in row %}
+                    <option value="{{ name }}"></option>
+                {% endfor %}
+            {% endfor %}
+        </datalist>
+        <br><br>
+
+        <input type="submit" value="Submit">
+        
+    </form>
+    </div>
+</body>
+</html>
